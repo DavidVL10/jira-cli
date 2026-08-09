@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jira-cli"
+version = "0.1.0"
+description = "A command-line tool for working with Jira issues"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[project.scripts]
+jira-cli = "jira_cli.cli:main"
+
+[tool.setuptools]
+packages = ["jira_cli"]

@@ -1,0 +1,25 @@
+# Byte-compiled bytecode cache
+__pycache__/
+*.py[cod]
+
+# Packaging / build artifacts
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local secrets — never commit an API token
+.env
+
+# Editor and OS cruft
+.DS_Store
+.idea/
+*.swp
