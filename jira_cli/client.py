@@ -125,8 +125,12 @@ def search(config, jql, limit=50, request=request_json):
         issues.extend(Issue.from_api(item) for item in page)
 
         token = payload.get("nextPageToken")
-        # An empty page with a token would loop forever; treat it as the end.
-        if not token or not page:
+
+        # `isLast` is the server saying outright that this page is the end,
+        # which beats inferring it. The other two conditions remain as
+        # fallbacks: a response that omits isLast, and an empty page arriving
+        # with a token, which would otherwise loop forever.
+        if payload.get("isLast") or not token or not page:
             break
 
     return issues[:limit]

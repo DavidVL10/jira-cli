@@ -318,6 +318,34 @@ def test_an_over_full_page_is_truncated_to_the_limit():
     assert [issue.key for issue in issues] == ["ABC-1", "ABC-2"]
 
 
+def test_is_last_ends_paging_even_when_a_token_is_present():
+    # The server telling us this is the end beats inferring it. Observed
+    # behaviour is that Jira omits the token on a final page, so this is
+    # belt-and-braces: if a token ever does accompany a last page, isLast
+    # stops us from spending a request to discover there is nothing left.
+    request = FakeRequest({"issues": [api_issue("ABC-1")], "nextPageToken": "t", "isLast": True})
+    issues = search(make_config(), "project = ABC", limit=50, request=request)
+    assert [issue.key for issue in issues] == ["ABC-1"]
+    assert len(request.calls) == 1
+
+
+def test_is_last_false_keeps_paging():
+    request = FakeRequest(
+        {"issues": [api_issue("ABC-1")], "nextPageToken": "t", "isLast": False},
+        {"issues": [api_issue("ABC-2")], "isLast": True},
+    )
+    issues = search(make_config(), "project = ABC", limit=50, request=request)
+    assert [issue.key for issue in issues] == ["ABC-1", "ABC-2"]
+    assert len(request.calls) == 2
+
+
+def test_paging_still_works_without_is_last():
+    # Older responses omit it; the token remains a sufficient signal.
+    request = FakeRequest(page(["ABC-1"], token="t"), page(["ABC-2"]))
+    issues = search(make_config(), "project = ABC", limit=50, request=request)
+    assert [issue.key for issue in issues] == ["ABC-1", "ABC-2"]
+
+
 def test_an_empty_page_ends_paging_even_with_a_token():
     # Otherwise a server that always returns a token would loop forever.
     request = FakeRequest({"issues": [], "nextPageToken": "never-ends"})
