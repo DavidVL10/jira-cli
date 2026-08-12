@@ -140,4 +140,7 @@ Two conventions worth knowing before changing things:
 
 ## License
 
-Not yet specified.
+None. All rights reserved.
+
+This is a personal tool published for visibility, not for reuse. Without a
+license no rights are granted, so please do not copy it into your own project.
