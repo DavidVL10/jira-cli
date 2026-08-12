@@ -33,7 +33,14 @@ class Config:
         """
         env = os.environ if environ is None else environ
 
-        missing = [name for name in (SITE_VAR, EMAIL_VAR, TOKEN_VAR) if not env.get(name)]
+        # Strip before testing: a variable holding only whitespace is a
+        # mistake, not a value, and must fail here with a clear message rather
+        # than later as a puzzling 401 from the server.
+        missing = [
+            name
+            for name in (SITE_VAR, EMAIL_VAR, TOKEN_VAR)
+            if not (env.get(name) or "").strip()
+        ]
         if missing:
             raise ConfigError(
                 "missing required environment variable(s): {}\n"

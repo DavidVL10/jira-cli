@@ -10,8 +10,14 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = []
 
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
 [project.scripts]
 jira-cli = "jira_cli.cli:main"
 
 [tool.setuptools]
 packages = ["jira_cli"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
