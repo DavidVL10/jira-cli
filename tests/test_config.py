@@ -155,6 +155,68 @@ def test_url_preserves_query_strings():
 
 
 # --------------------------------------------------------------------------
+# Scoped tokens: the gateway and cloud id
+# --------------------------------------------------------------------------
+
+#: Shape-accurate but fictional, matching the acme.atlassian.net site used above.
+#: These tests only assemble strings, so the value is arbitrary.
+CLOUD_ID = "00000000-1111-2222-3333-444444444444"
+
+
+def test_without_a_cloud_id_requests_go_to_the_site():
+    # An unscoped token is presented to the site itself.
+    config = Config.from_env(env())
+    assert config.api_root() == "https://acme.atlassian.net"
+
+
+def test_a_cloud_id_switches_requests_to_the_gateway():
+    # A scoped token is only accepted at api.atlassian.com.
+    config = Config.from_env(dict(env(), JIRA_CLOUD_ID=CLOUD_ID))
+    assert config.api_root() == "https://api.atlassian.com/ex/jira/" + CLOUD_ID
+
+
+def test_the_api_path_is_unchanged_by_the_gateway():
+    # Only the root moves; everything from /rest onward is identical, which is
+    # what keeps client.py out of this decision.
+    site = Config.from_env(env())
+    gateway = Config.from_env(dict(env(), JIRA_CLOUD_ID=CLOUD_ID))
+    path = "/rest/api/3/search/jql"
+    assert site.url(path).endswith(path)
+    assert gateway.url(path).endswith(path)
+
+
+def test_gateway_url_joins_with_exactly_one_slash():
+    config = Config.from_env(dict(env(), JIRA_CLOUD_ID=CLOUD_ID))
+    assert config.url("/rest/api/3/myself") == (
+        "https://api.atlassian.com/ex/jira/{}/rest/api/3/myself".format(CLOUD_ID)
+    )
+
+
+def test_cloud_id_is_optional():
+    # Adding it must not make the unscoped setup fail.
+    assert Config.from_env(env()).cloud_id == ""
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_a_blank_cloud_id_is_treated_as_absent(blank):
+    config = Config.from_env(dict(env(), JIRA_CLOUD_ID=blank))
+    assert config.cloud_id == ""
+    assert config.api_root() == "https://acme.atlassian.net"
+
+
+def test_cloud_id_whitespace_is_trimmed():
+    config = Config.from_env(dict(env(), JIRA_CLOUD_ID="  " + CLOUD_ID + "\n"))
+    assert config.cloud_id == CLOUD_ID
+
+
+def test_cloud_id_is_shown_in_repr_because_it_is_not_a_secret():
+    # A wrong cloud id is otherwise invisible; the token stays redacted.
+    config = Config.from_env(dict(env(), JIRA_CLOUD_ID=CLOUD_ID))
+    assert CLOUD_ID in repr(config)
+    assert TOKEN not in repr(config)
+
+
+# --------------------------------------------------------------------------
 # The token must not leak
 # --------------------------------------------------------------------------
 

@@ -14,6 +14,15 @@ SITE_VAR = "JIRA_SITE"
 EMAIL_VAR = "JIRA_EMAIL"
 TOKEN_VAR = "JIRA_API_TOKEN"
 
+#: Optional. Set it when the token carries scopes: those must be presented to
+#: the platform gateway rather than to the site, and the gateway identifies the
+#: instance by cloud id rather than by hostname. An unscoped token works
+#: against the site directly and needs none of this.
+CLOUD_ID_VAR = "JIRA_CLOUD_ID"
+
+#: Where scoped tokens are accepted.
+GATEWAY = "https://api.atlassian.com"
+
 
 @dataclass(frozen=True)
 class Config:
@@ -22,6 +31,7 @@ class Config:
     site: str
     email: str
     token: str
+    cloud_id: str = ""
 
     @classmethod
     def from_env(cls, environ=None):
@@ -58,6 +68,7 @@ class Config:
             site=_normalize_site(env[SITE_VAR]),
             email=env[EMAIL_VAR].strip(),
             token=env[TOKEN_VAR].strip(),
+            cloud_id=(env.get(CLOUD_ID_VAR) or "").strip(),
         )
 
     def auth_header(self):
@@ -70,12 +81,35 @@ class Config:
         return "Basic " + base64.b64encode(raw).decode("ascii")
 
     def url(self, path):
-        """Join an API path onto the site root."""
-        return "{}/{}".format(self.site, path.lstrip("/"))
+        """Build the full URL for an API path.
+
+        A scoped token is only accepted at the gateway, addressed by cloud id:
+
+            https://api.atlassian.com/ex/jira/<cloud id>/rest/api/3/...
+
+        An unscoped token goes to the site itself:
+
+            https://your-org.atlassian.net/rest/api/3/...
+
+        The path after /rest/api/3 is identical either way, which is why this
+        is the only method that has to know the difference.
+        """
+        root = self.api_root()
+        return "{}/{}".format(root, path.lstrip("/"))
+
+    def api_root(self):
+        """The base every API path hangs off, gateway or site."""
+        if self.cloud_id:
+            return "{}/ex/jira/{}".format(GATEWAY, self.cloud_id)
+        return self.site
 
     def __repr__(self):
         # Never let the token reach a log line, a traceback, or a debugger dump.
-        return "Config(site={!r}, email={!r}, token=<redacted>)".format(self.site, self.email)
+        # The cloud id is an instance identifier, not a credential, and is worth
+        # showing: a wrong one is otherwise invisible.
+        return "Config(site={!r}, email={!r}, cloud_id={!r}, token=<redacted>)".format(
+            self.site, self.email, self.cloud_id
+        )
 
     __str__ = __repr__
 

@@ -35,8 +35,9 @@ def build_parser():
         prog="jira-cli",
         description="Work with Jira issues from the terminal.",
         epilog=(
-            "Configuration is read from the environment: "
-            "JIRA_SITE, JIRA_EMAIL and JIRA_API_TOKEN."
+            "Configuration is read from the environment: JIRA_SITE, JIRA_EMAIL "
+            "and JIRA_API_TOKEN. Set JIRA_CLOUD_ID as well if your API token "
+            "has scopes; those are only accepted at api.atlassian.com."
         ),
     )
     parser.add_argument(
