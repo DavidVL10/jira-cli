@@ -23,3 +23,6 @@ htmlcov/
 .DS_Store
 .idea/
 *.swp
+
+# Local agent instructions — not shared
+CLAUDE.md
