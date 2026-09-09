@@ -28,3 +28,45 @@ jobs:
 
       - name: Run tests
         run: python -m pytest
+
+  no-runtime-dependencies:
+    name: no runtime dependencies
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # Deliberately without the [dev] extra: this job asks what a *user* gets.
+      - name: Install
+        run: pip install .
+
+      - name: Assert the standard library is all we need
+        run: |
+          python - <<'PY'
+          import sys
+          from importlib.metadata import distributions
+
+          # Packaging machinery present in a fresh environment regardless of
+          # what we declare; anything else is a runtime dependency.
+          ALLOWED = {"jira-cli", "pip", "setuptools", "wheel", "pkg-resources"}
+
+          installed = {
+              (d.metadata["Name"] or "").lower().replace("_", "-")
+              for d in distributions()
+          }
+          installed.discard("")
+          extra = sorted(installed - ALLOWED)
+
+          if extra:
+              sys.exit(
+                  "Runtime dependencies found: " + ", ".join(extra) + "\n"
+                  "This project declares dependencies = [] and uses the "
+                  "standard library only."
+              )
+
+          print("OK, no runtime dependencies. Installed:", ", ".join(sorted(installed)))
+          PY
