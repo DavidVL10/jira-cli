@@ -215,7 +215,7 @@ def test_policy_is_immutable():
     # flagging the deliberate violation.
     policy = RetryPolicy()
     with pytest.raises(dataclasses.FrozenInstanceError):
-        setattr(policy, "max_attempts", 99)
+        setattr(policy, "max_attempts", 99)  # noqa: B010 - see comment above
 
 
 # --------------------------------------------------------------------------
@@ -282,7 +282,9 @@ def test_non_retryable_status_fails_immediately(status):
 
 
 def test_error_body_is_carried_into_the_exception():
-    urlopen = FakeUrlopen(make_http_error(404, b'{"errorMessages":["Issue not found"]}'))
+    urlopen = FakeUrlopen(
+        make_http_error(404, b'{"errorMessages":["Issue not found"]}')
+    )
     with pytest.raises(HttpError) as caught:
         request_json(URL, urlopen=urlopen)
     assert "Issue not found" in caught.value.body
@@ -320,7 +322,8 @@ def test_retryable_status_is_retried_then_succeeds(status):
     urlopen = FakeUrlopen(make_http_error(status), body_of({"ok": True}))
     sleep = RecordingSleep()
 
-    assert request_json(URL, urlopen=urlopen, sleep=sleep, rng=FULL_JITTER) == {"ok": True}
+    result = request_json(URL, urlopen=urlopen, sleep=sleep, rng=FULL_JITTER)
+    assert result == {"ok": True}
     assert len(urlopen.calls) == 2
     assert sleep.delays == [0.5]
 
@@ -408,7 +411,12 @@ def test_a_single_attempt_policy_never_sleeps():
     sleep = RecordingSleep()
 
     with pytest.raises(RetryLimitExceeded):
-        request_json(URL, urlopen=FakeUrlopen(make_http_error(503)), policy=policy, sleep=sleep)
+        request_json(
+            URL,
+            urlopen=FakeUrlopen(make_http_error(503)),
+            policy=policy,
+            sleep=sleep,
+        )
 
     assert sleep.delays == []
 

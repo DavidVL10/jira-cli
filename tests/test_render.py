@@ -17,8 +17,14 @@ from jira_cli.render import (
 WIDE = 200
 
 
-def issue(key="ABC-1", summary="Fix login redirect loop", status="In Progress",
-          assignee="Dana Reed", priority="High", updated="2026-08-11T09:15:00.000-0700"):
+def issue(
+    key="ABC-1",
+    summary="Fix login redirect loop",
+    status="In Progress",
+    assignee="Dana Reed",
+    priority="High",
+    updated="2026-08-11T09:15:00.000-0700",
+):
     return Issue(
         key=key,
         summary=summary,
@@ -195,7 +201,9 @@ def test_width_defaults_to_the_terminal(monkeypatch):
     import shutil
 
     monkeypatch.setattr(
-        shutil, "get_terminal_size", lambda fallback=None: __import__("os").terminal_size((70, 24))
+        shutil,
+        "get_terminal_size",
+        lambda fallback=None: __import__("os").terminal_size((70, 24)),
     )
     rendered = render_issues([issue(summary="q" * 300)])
     assert all(len(line) <= 70 for line in rendered.split("\n"))
@@ -203,7 +211,10 @@ def test_width_defaults_to_the_terminal(monkeypatch):
 
 def test_rendering_is_stable_for_a_single_issue():
     # The narrowest interesting case: every column sized by one row.
-    rendered = render_issues([issue(key="AB-1", status="Done", assignee="Kim", summary="Ship it")], width=WIDE)
+    rendered = render_issues(
+        [issue(key="AB-1", status="Done", assignee="Kim", summary="Ship it")],
+        width=WIDE,
+    )
     header, row = rendered.split("\n")
     assert header.split() == ["KEY", "STATUS", "ASSIGNEE", "UPDATED", "SUMMARY"]
     assert row.split() == ["AB-1", "Done", "Kim", "2026-08-11", "Ship", "it"]

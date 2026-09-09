@@ -44,7 +44,13 @@ def test_repeated_trailing_slashes_are_stripped():
 
 def test_surrounding_whitespace_is_trimmed_from_every_value():
     # Copy-pasting a token out of a browser routinely picks up a newline.
-    config = Config.from_env(env(site="  https://acme.atlassian.net  ", email=" dev@acme.test\n", token="  tok\n"))
+    config = Config.from_env(
+        env(
+            site="  https://acme.atlassian.net  ",
+            email=" dev@acme.test\n",
+            token="  tok\n",
+        )
+    )
     assert config.site == "https://acme.atlassian.net"
     assert config.email == "dev@acme.test"
     assert config.token == "tok"
@@ -108,7 +114,10 @@ def test_the_error_explains_how_to_fix_it():
     assert "api-tokens" in message  # where to create a token
 
 
-@pytest.mark.parametrize("bad_site", ["acme.atlassian.net", "ftp://acme.test", "//acme.test", "www.acme.test"])
+@pytest.mark.parametrize(
+    "bad_site",
+    ["acme.atlassian.net", "ftp://acme.test", "//acme.test", "www.acme.test"],
+)
 def test_a_site_without_a_usable_scheme_is_rejected(bad_site):
     with pytest.raises(ConfigError) as caught:
         Config.from_env(env(site=bad_site))
