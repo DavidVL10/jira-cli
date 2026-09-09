@@ -1,5 +1,7 @@
 # jira-cli
 
+[![CI](https://github.com/DavidVL10/jira-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/DavidVL10/jira-cli/actions/workflows/ci.yml)
+
 List Jira issues from the terminal. No runtime dependencies — the standard
 library only.
 
