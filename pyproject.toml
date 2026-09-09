@@ -11,7 +11,7 @@ requires-python = ">=3.9"
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff>=0.6"]
 
 [project.scripts]
 jira-cli = "jira_cli.cli:main"
@@ -21,3 +21,15 @@ packages = ["jira_cli"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+# Matches requires-python, so 3.10+ syntax is a lint error rather than a
+# convention someone has to remember.
+target-version = "py39"
+line-length = 88
+
+[tool.ruff.lint]
+# E/W pycodestyle · F pyflakes · I import order · B bugbear.
+# UP and SIM are deliberately off: they would rewrite the existing
+# .format() calls wholesale for no behavioural gain.
+select = ["E", "W", "F", "I", "B"]

@@ -24,7 +24,9 @@ def positive_int(value):
     try:
         number = int(value)
     except (TypeError, ValueError):
-        raise argparse.ArgumentTypeError("{!r} is not a whole number".format(value))
+        raise argparse.ArgumentTypeError(
+            "{!r} is not a whole number".format(value)
+        ) from None
     if number < 1:
         raise argparse.ArgumentTypeError("must be at least 1, got {}".format(number))
     return number

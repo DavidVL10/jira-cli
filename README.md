@@ -116,7 +116,11 @@ Exit codes: `0` success, `1` a configuration or API error, `2` bad arguments,
 ```bash
 .venv/bin/pip install -e '.[dev]'
 .venv/bin/python -m pytest
+.venv/bin/ruff check .
 ```
+
+CI runs the suite on Python 3.9 through 3.13, lints with ruff, and checks that
+the package still installs without pulling in a runtime dependency.
 
 The tests never touch the network and never sleep. `request_json` takes its
 `urlopen`, `sleep`, and `rng` as parameters, and `search` takes its `request`,

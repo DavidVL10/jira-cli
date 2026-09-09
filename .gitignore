@@ -11,8 +11,9 @@ dist/
 .venv/
 venv/
 
-# Test and coverage output
+# Test, lint and coverage output
 .pytest_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 

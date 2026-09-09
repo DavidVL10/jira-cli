@@ -323,7 +323,9 @@ def test_is_last_ends_paging_even_when_a_token_is_present():
     # behaviour is that Jira omits the token on a final page, so this is
     # belt-and-braces: if a token ever does accompany a last page, isLast
     # stops us from spending a request to discover there is nothing left.
-    request = FakeRequest({"issues": [api_issue("ABC-1")], "nextPageToken": "t", "isLast": True})
+    request = FakeRequest(
+        {"issues": [api_issue("ABC-1")], "nextPageToken": "t", "isLast": True}
+    )
     issues = search(make_config(), "project = ABC", limit=50, request=request)
     assert [issue.key for issue in issues] == ["ABC-1"]
     assert len(request.calls) == 1
